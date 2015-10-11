@@ -1,0 +1,75 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="heatmap-component">
+  <template>
+    <style is="custom-style">
+        :host{
+          width: 400px;
+          height: 400px;
+        };
+        #heatmap-container{
+          width: 400;
+          height: 400px;
+        }
+
+    </style>
+    <div>      
+      <div id="heatmap-container" class="fullSize"></div>
+    </div>
+  </template>
+    
+    
+  <script>
+    (function() {
+      'use strict';      
+      Polymer({
+        is: 'heatmap-component',
+        visibleList: false,
+        readyToLoadNewPage: true,
+        attached: function() {         
+
+
+          var vector = new ol.layer.Heatmap({
+              source: new ol.source.KML({
+                extractStyles: false,
+                projection: 'EPSG:3857',
+                url: 'data.kml'
+              }),
+              radius: 5
+            });
+
+            vector.getSource().on('addfeature', function(event) {
+              
+              var name = event.feature.get('name');
+              var magnitude = parseFloat(name.substr(2));
+              event.feature.set('weight', magnitude - 5);
+            });
+
+            var raster = new ol.layer.Tile({
+              source: new ol.source.Stamen({
+                layer: 'toner'
+              })
+            });
+
+            var map = new ol.Map({
+              layers: [raster, vector],
+              target: 'heatmap-container',
+              view: new ol.View({
+                center: [0, 0],
+                zoom: 2
+              })
+            });
+          console.log("map: ", map);
+        },
+        ready: function(){        
+        },
+        properties: {
+           model: {
+             type: Object,
+             value: [],
+             notify: true
+           }
+        }        
+      });
+    })();
+  </script>
+</dom-module>
